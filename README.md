@@ -55,6 +55,8 @@ Schedule Plan
 
 ## 🧪 Testing PawPal+
 
+To run the automated validation test suite, execute this command in your terminal:
+
 ```bash
 # Run the full test suite:
 pytest
@@ -66,7 +68,15 @@ pytest --cov
 Sample test output:
 
 ```
-# Paste your pytest output here
+=========================================== test session starts ============================================
+platform darwin -- Python 3.11.7, pytest-7.4.0, pluggy-1.0.0
+rootdir: /Users/divitasingh/ai110-module2show-pawpal-starter
+plugins: anyio-4.2.0
+collected 3 items                                                                                          
+
+tests/test_pawpal.py ...                                                                             [100%]
+
+============================================ 3 passed in 0.01s =============================================
 ```
 
 ## 📐 Smarter Scheduling
