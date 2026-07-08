@@ -19,6 +19,9 @@ My initial system architecture focuses on separating data storage from schedulin
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
+My initial design uses four classes: Pet and Task serve as basic data storage objects, Owner manages lists of pets and tracks global time availability constraints, and Scheduler acts as the standalone logic layer to sort and filter tasks. It seems like a good design, so I haven't made any changes yet. 
+
+
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
