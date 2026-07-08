@@ -31,6 +31,9 @@ My initial design uses four classes: Pet and Task serve as basic data storage ob
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
 
+The system checks for timeline boundary conflicts based on matching explicit clock timestamps rather than parsing sliding duration intervals. This lightweight approach keeps runtime computations exceptionally fast and keeps code maintainable while offering quick, digestible warnings to the user.
+
+
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.

@@ -45,7 +45,7 @@ class Scheduler:
     """Calculates chronological sort weights and logs scheduling overlaps."""
     
     @staticmethod
-    def get_all_task_pairs(owner: Owner) -> List[Tuple[str, Task]]:
+    def get_all_task_pairs(owner: Owner) -> List[tuple[str, Task]]:
         """Gathers a combined collection of all tasks linked to pet identifier text."""
         pairs = []
         for pet in owner.pets:
@@ -54,17 +54,17 @@ class Scheduler:
         return pairs
 
     @staticmethod
-    def sort_by_time(task_pairs: List[Tuple[str, Task]]) -> List[Tuple[str, Task]]:
+    def sort_by_time(task_pairs: List[tuple[str, Task]]) -> List[tuple[str, Task]]:
         """Sorts tasks chronologically based on their HH:MM clock string values."""
-        return sorted(task_pairs, key=lambda pair: datetime.strptime(pair.start_time_str, "%H:%M"))
-
+        return sorted(task_pairs, key=lambda pair: datetime.strptime(pair[1].start_time_str, "%H:%M"))
+    
     @staticmethod
-    def filter_by_pet(task_pairs: List[Tuple[str, Task]], pet_name: str) -> List[Tuple[str, Task]]:
+    def filter_by_pet(task_pairs: List[tuple[str, Task]], pet_name: str) -> List[tuple[str, Task]]:
         """Filters a task collection by matching a designated pet's name."""
         return [p for p in task_pairs if p.lower() == pet_name.lower()]
 
     @staticmethod
-    def detect_conflicts(task_pairs: List[Tuple[str, Task]]) -> List[str]:
+    def detect_conflicts(task_pairs: List[tuple[str, Task]]) -> List[str]:
         """Scans timestamps and logs warning alerts if identical clocks collide."""
         warnings = []
         time_registry: Dict[str, List[str]] = {}
@@ -76,5 +76,5 @@ class Scheduler:
             
         for clock_time, entries in time_registry.items():
             if len(entries) > 1:
-                warnings.append(f"⚠️ Conflict at {clock_time}: Overlap detected between {', '.join(entries)}.")
+                warnings.append(f"Conflict at {clock_time}: Overlap detected between {', '.join(entries)}.")
         return warnings
