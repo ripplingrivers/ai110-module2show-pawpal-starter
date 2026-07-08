@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List
+from datetime import datetime
 
 @dataclass
 class Task:
@@ -7,12 +8,17 @@ class Task:
     title: str
     duration_minutes: int
     priority: str # "high", "medium", "low"
+    start_time_str: str  # Format: "HH:MM" (e.g., "08:30")
+    frequency: str = "Once"  # "Once", "Daily", "Weekly"
     is_completed: bool = False
 
     def mark_complete(self) -> None:
         """Changes the task's completion status to True."""
         self.is_completed = True
-
+        if self.frequency == "Daily":
+            return Task(title=self.title, duration_minutes=self.duration_minutes, priority=self.priority, start_time_str=self.start_time_str, frequency=self.frequency)
+        return None
+    
 @dataclass
 class Pet:
     """Stores individual pet details and their assigned care tasks."""
@@ -36,27 +42,39 @@ class Owner:
         self.pets.append(pet)
 
 class Scheduler:
-    """The logic engine that organizes and prioritizes tasks across all pets."""
+    """Calculates chronological sort weights and logs scheduling overlaps."""
+    
     @staticmethod
-    def generate_plan(owner: Owner):
-        """Sorts all pet tasks by priority and fits them within the owner's available time."""
-        schedule = []
-        remaining_time = owner.available_time_minutes
-        
-        # Gather all tasks across all pets
-        all_tasks = []
+    def get_all_task_pairs(owner: Owner) -> List[Tuple[str, Task]]:
+        """Gathers a combined collection of all tasks linked to pet identifier text."""
+        pairs = []
         for pet in owner.pets:
             for task in pet.tasks:
-                all_tasks.append((pet, task))
-                
-        # Simple sorting mechanism by priority string values
-        priority_map = {"high": 1, "medium": 2, "low": 3}
-        sorted_tasks = sorted(all_tasks, key=lambda x: priority_map.get(x[1].priority, 3))
+                pairs.append((pet.name, task))
+        return pairs
+
+    @staticmethod
+    def sort_by_time(task_pairs: List[Tuple[str, Task]]) -> List[Tuple[str, Task]]:
+        """Sorts tasks chronologically based on their HH:MM clock string values."""
+        return sorted(task_pairs, key=lambda pair: datetime.strptime(pair.start_time_str, "%H:%M"))
+
+    @staticmethod
+    def filter_by_pet(task_pairs: List[Tuple[str, Task]], pet_name: str) -> List[Tuple[str, Task]]:
+        """Filters a task collection by matching a designated pet's name."""
+        return [p for p in task_pairs if p.lower() == pet_name.lower()]
+
+    @staticmethod
+    def detect_conflicts(task_pairs: List[Tuple[str, Task]]) -> List[str]:
+        """Scans timestamps and logs warning alerts if identical clocks collide."""
+        warnings = []
+        time_registry: Dict[str, List[str]] = {}
         
-        for pet, task in sorted_tasks:
-            if remaining_time >= task.duration_minutes:
-                remaining_time -= task.duration_minutes
-                schedule.append({"pet": pet.name, "task": task.title, "duration": task.duration_minutes, "priority": task.priority, "status": "Scheduled"})
-            else:
-                schedule.append({"pet": pet.name, "task": task.title, "duration": task.duration_minutes, "priority": task.priority, "status": "Skipped"})
-        return schedule
+        for pet_name, task in task_pairs:
+            if task.start_time_str not in time_registry:
+                time_registry[task.start_time_str] = []
+            time_registry[task.start_time_str].append(f"{pet_name}'s {task.title}")
+            
+        for clock_time, entries in time_registry.items():
+            if len(entries) > 1:
+                warnings.append(f"⚠️ Conflict at {clock_time}: Overlap detected between {', '.join(entries)}.")
+        return warnings
