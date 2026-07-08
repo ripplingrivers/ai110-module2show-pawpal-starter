@@ -9,49 +9,63 @@ if "owner" not in st.session_state:
 
 owner = st.session_state.owner
 
-st.subheader("User and Pet Profiles")
-col1, col2 = st.columns(2)
-with col1:
-    owner.name = st.text_input("Owner Name", value=owner.name)
-with col2:
-    pet_name_input = st.text_input("New Pet Name", value="Mochi")
+st.sidebar.header("Profile Settings")
+owner.name = st.sidebar.text_input("Owner Name", value=owner.name)
+owner.available_time_minutes = st.sidebar.number_input("Available Time (mins)", min_value=10, max_value=1440, value=owner.available_time_minutes)
 
-if st.button("Register Pet"):
-    if pet_name_input:
-        owner.add_pet(Pet(name=pet_name_input, species="dog"))
-        st.success(f"Successfully registered {pet_name_input}!")
+st.sidebar.divider()
+st.sidebar.subheader("Register Pet")
+p_name = st.sidebar.text_input("Pet Name")
+p_spec = st.sidebar.selectbox("Species", ["Dog", "Cat", "Other"])
 
-if owner.pets:
-    st.caption(f"Currently tracking: {', '.join([p.name for p in owner.pets])}")
+if st.sidebar.button("Register Profile"):
+    if p_name:
+        owner.add_pet(Pet(name=p_name, species=p_spec))
+        st.sidebar.success(f"Registered {p_name}!")
 
-st.divider()
-
-st.subheader("Activity Planning")
+st.subheader("Design a Care Task")
 if not owner.pets:
-    st.info("Please register a pet profile above before designing tasks.")
+    st.info("Please register a pet profile via the sidebar configuration first.")
 else:
-    target_pet = st.selectbox("Assign Task To", options=[p.name for p in owner.pets])
-    
-    col_t, col_d, col_p = st.columns(3)
-    with col_t:
-        task_title = st.text_input("Task Title", value="Morning Walk")
-    with col_d:
-        duration = st.number_input("Duration (minutes)", min_value=1, max_value=240, value=20)
-    with col_p:
-        priority = st.selectbox("Priority", ["high", "medium", "low"], index=0)
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        target_name = st.selectbox("Assign To", options=[p.name for p in owner.pets])
+    with c2:
+        t_title = st.text_input("Task Title", value="Grooming")
+    with c3:
+        t_dur = st.number_input("Duration (mins)", min_value=5, max_value=240, value=30)
+        
+    c4, c5 = st.columns(2)
+    with c4:
+        t_start = st.text_input("Start Time (HH:MM)", value="08:00")
+    with c5:
+        t_freq = st.selectbox("Frequency", ["Once", "Daily"])
 
-    if st.button("Add Task"):
-        pet_obj = next(p for p in owner.pets if p.name == target_pet)
-        pet_obj.add_task(Task(title=task_title, duration_minutes=int(duration), priority=priority))
-        st.success(f"Added '{task_title}' to schedule!")
+    if st.button("Commit Task to System"):
+        pet_obj = next(p for p in owner.pets if p.name == target_name)
+        pet_obj.add_task(Task(title=t_title, duration_minutes=int(t_dur), priority="high", start_time_str=t_start, frequency=t_freq))
+        st.success(f"Added '{t_title}' successfully!")
 
 st.divider()
 
-st.subheader("Build Schedule")
-if st.button("Generate Today's Plan"):
-    plan = Scheduler.generate_plan(owner)
-    if plan:
-        st.write("Current Generated Plan:")
-        st.table(plan)
-    else:
-        st.info("No active planning records present yet.")
+st.subheader("Master Chronological Itinerary")
+all_pairs = Scheduler.get_all_task_pairs(owner)
+
+if not all_pairs:
+    st.info("No active planning data recorded yet.")
+else:
+    warnings = Scheduler.detect_conflicts(all_pairs)
+    for alert in warnings:
+        st.warning(alert)
+        
+    sorted_pairs = Scheduler.sort_by_time(all_pairs)
+    display_grid = []
+    for pet_name, task in sorted_pairs:
+        display_grid.append({
+            "Time": task.start_time_str,
+            "Pet Target": pet_name,
+            "Activity": task.title,
+            "Duration": f"{task.duration_minutes}m",
+            "Frequency": task.frequency
+        })
+    st.table(display_grid)
