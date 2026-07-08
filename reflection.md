@@ -7,6 +7,13 @@
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
+My initial system architecture focuses on separating data storage from scheduling logic. It features four primary classes:
+
+1. **Pet**: A data class containing identification attributes (`name`, `species`).
+2. **Task**: A data class storing care activity specifications (`title`, `duration_minutes`, `priority`).
+3. **Owner**: A management class representing the user profile (`name`), tracking their associated `Pet` objects, and maintaining daily availability (`available_time_minutes`).
+4. **Scheduler**: The core logic layer responsible for holding a pool of pending `Task` objects. It includes methods to add tasks (`add_task`), algorithmically sort and filter tasks based on time constraints (`generate_plan`), and produce logic summaries (`get_explanation`).
+
 **b. Design changes**
 
 - Did your design change during implementation?
