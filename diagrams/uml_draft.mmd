@@ -1,0 +1,17 @@
+classDiagram
+    class Pet {
+        +str name
+        +str species
+    }
+    class Task {
+        +str title
+        +int duration_minutes
+        +str priority
+    }
+    class Owner {
+        +str name
+        +list pets
+    }
+    class Scheduler {
+        +generate_plan(owner) list
+    }
